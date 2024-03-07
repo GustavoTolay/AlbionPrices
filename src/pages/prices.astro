@@ -1,0 +1,128 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title='Precios'>
+  <main class='container'>
+    <img id='item-image' src='' alt='' />
+
+    <h1>Órdenes de venta</h1>
+    <div>
+      <article class='item'>
+        <h2>Precio Min.</h2>
+        <table class='striped'>
+          <thead>
+            <tr>
+              <th scope='col'>Ciudad</th>
+              <th scope='col'>Precio</th>
+              <th scope='col'>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id='sell_price_min'></tbody>
+        </table>
+      </article>
+      <article class='item'>
+        <h2>Precio Max.</h2>
+        <table class='striped'>
+          <thead>
+            <tr>
+              <th scope='col'>Ciudad</th>
+              <th scope='col'>Precio</th>
+              <th scope='col'>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id='sell_price_max'></tbody>
+        </table>
+      </article>
+    </div>
+
+    <h1>Órdenes de compra</h1>
+    <div>
+      <article class='item'>
+        <h2>Precio Min.</h2>
+        <table class='striped'>
+          <thead>
+            <tr>
+              <th scope='col'>Ciudad</th>
+              <th scope='col'>Precio</th>
+              <th scope='col'>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id='buy_price_min'></tbody>
+        </table>
+      </article>
+      <article class='item'>
+        <h2>Precio Max.</h2>
+        <table class='striped'>
+          <thead>
+            <tr>
+              <th scope='col'>Ciudad</th>
+              <th scope='col'>Precio</th>
+              <th scope='col'>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id='buy_price_max'></tbody>
+        </table>
+      </article>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+
+  const quality = parseInt(params.get('id') || '1');
+  const alias = params.get('alias');
+
+  document
+    .getElementById('item-image')
+    .setAttribute('src', `https://render.albiononline.com/v1/item/${alias}.png`);
+
+  let tableInfo = [];
+
+  const itemInfo = fetch(
+    `https://west.albion-online-data.com/api/v2/stats/prices/${alias}?locations=Caerleon,Bridgewatch,Fort Sterling,Martlock,Thetford,Lymhurst&qualities=${quality}`
+  )
+    .then((res) => res.json())
+    .then((res) => {
+      console.table(res);
+      tableInfo = res;
+      setTablesItems();
+    });
+
+  const tables = ['sell_price_min', 'sell_price_max', 'buy_price_min', 'buy_price_max'];
+
+  function setTablesItems() {
+    tables.forEach((tableId) => {
+      const table = document.getElementById(tableId);
+
+      let html = '';
+      tableInfo.forEach(
+        (item) =>
+          (html += `
+          <tr>
+            <th scope="row"><img class="icon-img" src="https://render.albiononline.com/v1/item/T8_CAPEITEM_FW_${item.city == 'Fort Sterling' ? 'FORTSTERLING' : item.city.toUpperCase()}" alt="" />${item.city}</th>
+            <td>${item[tableId]}</td>
+            <td>${item[tableId + '_date'].split('T')[0]}</td>
+          </tr>
+        `)
+      );
+
+      table.innerHTML = html;
+    });
+  }
+</script>
+
+<style>
+  div {
+    display: flex;
+    gap: 20px;
+  }
+</style>
+
+<style is:global>
+  .icon-img {
+    height: 40px;
+    margin-right: 10px;
+  }
+</style>
