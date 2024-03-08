@@ -58,11 +58,9 @@ import Layout from '../layouts/Layout.astro';
     let html = '';
 
     list.forEach((item) => {
-      const [alias, quality] = item.id.split('@');
-
       html += `
 				<li class="list__item">
-          <a href="/prices?alias=${alias}&quality=${quality}">
+          <a href="/prices?alias=${item.id}&quality=1">
             <article class="item">
 					    <h6>${item.name}</h6>
 					    <img class="item__image" src="https://render.albiononline.com/v1/item/${item.id}.png"/>

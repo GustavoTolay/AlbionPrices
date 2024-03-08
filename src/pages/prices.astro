@@ -81,7 +81,7 @@ import Layout from '../layouts/Layout.astro';
 <script lang='js'>
   const params = new URLSearchParams(window.location.search);
 
-  const quality = parseInt(params.get('id') || '1');
+  const quality = parseInt(params.get('quality') || '1');
   const alias = params.get('alias');
 
   let tablesInfo;
