@@ -1,17 +1,22 @@
 ---
+import SearchBar from '../components/SearchBar.astro';
 import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title='Albion Market Prices'>
-  <main class='container'>
-    <p>Consulta los precios del mercado de Albion West:</p>
-    <form action='#' id='item-form'>
-      <fieldset role='group'>
-        <input type='text' name='name' placeholder='Nombre del producto' />
-        <input type='submit' value='Buscar' />
-      </fieldset>
-    </form>
-    <ul id='item-list'></ul>
+  <main>
+    <div class='container'>
+      <p>Consulta los precios del mercado de Albion West:</p>
+    </div>
+    <div class='header'>
+      <div class='container'>
+        <SearchBar />
+      </div>
+    </div>
+
+    <div class='container'>
+      <ul id='item-list'></ul>
+    </div>
   </main>
 </Layout>
 
@@ -53,7 +58,7 @@ import Layout from '../layouts/Layout.astro';
     let html = '';
 
     list.forEach((item) => {
-      const [alias, quality] = item.id.split("@");
+      const [alias, quality] = item.id.split('@');
 
       html += `
 				<li class="list__item">
@@ -70,6 +75,7 @@ import Layout from '../layouts/Layout.astro';
   }
 </script>
 
+<!-- JS-generated-table styles -->
 <style is:global>
   .item {
     display: flex;
@@ -106,5 +112,16 @@ import Layout from '../layouts/Layout.astro';
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 10px;
+  }
+
+  .header {
+    position: sticky;
+    top: 56px; /* Navbar's height */
+    z-index: 999;
+    background-color: #13171f;
+  }
+
+  main {
+    padding-top: 0;
   }
 </style>
