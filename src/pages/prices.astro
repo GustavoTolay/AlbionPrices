@@ -14,7 +14,9 @@ import Layout from '../layouts/Layout.astro';
           <thead>
             <tr>
               <th scope='col'>Ciudad</th>
-              <th scope='col'>Precio</th>
+              <th scope='col' class='price-button'
+                >Precio <img class='price-arrow' src='/arrowup.svg' alt='' /></th
+              >
               <th scope='col'>Fecha</th>
             </tr>
           </thead>
@@ -27,7 +29,9 @@ import Layout from '../layouts/Layout.astro';
           <thead>
             <tr>
               <th scope='col'>Ciudad</th>
-              <th scope='col'>Precio</th>
+              <th scope='col' class='price-button'
+                >Precio <img class='price-arrow' src='/arrowup.svg' alt='' /></th
+              >
               <th scope='col'>Fecha</th>
             </tr>
           </thead>
@@ -44,7 +48,9 @@ import Layout from '../layouts/Layout.astro';
           <thead>
             <tr>
               <th scope='col'>Ciudad</th>
-              <th scope='col'>Precio</th>
+              <th scope='col' class='price-button'
+                >Precio <img class='price-arrow' src='/arrowup.svg' alt='' /></th
+              >
               <th scope='col'>Fecha</th>
             </tr>
           </thead>
@@ -57,7 +63,9 @@ import Layout from '../layouts/Layout.astro';
           <thead>
             <tr>
               <th scope='col'>Ciudad</th>
-              <th scope='col'>Precio</th>
+              <th scope='col' class='price-button'
+                >Precio <img class='price-arrow' src='/arrowup.svg' alt='' /></th
+              >
               <th scope='col'>Fecha</th>
             </tr>
           </thead>
@@ -70,49 +78,90 @@ import Layout from '../layouts/Layout.astro';
   </main>
 </Layout>
 
-<script>
+<script lang='js'>
   const params = new URLSearchParams(window.location.search);
 
   const quality = parseInt(params.get('id') || '1');
   const alias = params.get('alias');
 
+  let tablesInfo;
+
   document
     .getElementById('item-image')
     .setAttribute('src', `https://render.albiononline.com/v1/item/${alias}.png`);
 
-  let tableInfo = [];
-
-  const itemInfo = fetch(
+  fetch(
     `https://west.albion-online-data.com/api/v2/stats/prices/${alias}?locations=Caerleon,Bridgewatch,Fort Sterling,Martlock,Thetford,Lymhurst&qualities=${quality}`
   )
     .then((res) => res.json())
     .then((res) => {
-      console.table(res);
-      tableInfo = res;
-      setTablesItems();
+      tablesInfo = divideTablesInfo(res);
+      setTables();
     });
 
-  const tables = ['sell_price_min', 'sell_price_max', 'buy_price_min', 'buy_price_max'];
+  const tableNames = [
+    'sell_price_min',
+    'sell_price_max',
+    'buy_price_min',
+    'buy_price_max',
+  ];
 
-  function setTablesItems() {
-    tables.forEach((tableId) => {
-      const table = document.getElementById(tableId);
+  let orderBy = 'price-asc';
 
-      let html = '';
-      tableInfo.forEach((item) => {
-        const date = item[tableId + '_date'].split('T')[0]
-        html += `
-          <tr>
-            <th scope="row"><img class="icon-img" src="https://render.albiononline.com/v1/item/T8_CAPEITEM_FW_${item.city == 'Fort Sterling' ? 'FORTSTERLING' : item.city.toUpperCase()}" alt="" />${item.city}</th>
-            <td>${item[tableId] || '-'}</td>
-            <td>${date == '0001-01-01' ? '-' : date}</td>
-          </tr>
-        `;
-      });
+  function divideTablesInfo(items) {
+    const info = {};
 
-      table.innerHTML = html;
+    tableNames.forEach((tableName) => {
+      info[tableName] = items.map((item) => ({
+        city: item.city,
+        price: item[tableName],
+        date: item[tableName + '_date'],
+      }));
+    });
+
+    return info;
+  }
+
+  function setTables() {
+    Object.entries(tablesInfo).forEach(([key, value]) => {
+      const table = document.getElementById(key);
+
+      if (orderBy == 'price-asc') value.sort((a, b) => a.price - b.price);
+      else if (orderBy == 'price-desc') value.sort((a, b) => b.price - a.price);
+
+      table.innerHTML = value.reduce((prev, curr) => {
+        const [date, hour] = curr.date.split('T');
+        return (
+          prev +
+          `<tr>
+             <th scope="row"><img class="icon-img" src="https://render.albiononline.com/v1/item/T8_CAPEITEM_FW_${curr.city == 'Fort Sterling' ? 'FORTSTERLING' : curr.city.toUpperCase()}" alt="" />${curr.city}</th>
+             <td>${curr.price || '-'}</td>
+             <td>${date == '0001-01-01' ? '-' : date + ', ' + hour.slice(0, 5)}</td>
+          </tr>`
+        );
+      }, '');
     });
   }
+
+  function changeOrder(newValue) {
+    orderBy = newValue;
+    setTables();
+  }
+
+  const priceButtons = Array.from(document.getElementsByClassName('price-button'));
+  const priceArrow = Array.from(document.getElementsByClassName('price-arrow'));
+
+  priceButtons.forEach((element) =>
+    element.addEventListener('click', () => {
+      if (orderBy == 'price-desc') {
+        changeOrder('price-asc');
+        priceArrow.forEach((item) => (item.src = '/arrowup.svg'));
+      } else if (orderBy == 'price-asc') {
+        changeOrder('price-desc');
+        priceArrow.forEach((item) => (item.src = '/arrowdown.svg'));
+      }
+    })
+  );
 </script>
 
 <style>
@@ -123,6 +172,11 @@ import Layout from '../layouts/Layout.astro';
 
   main {
     padding-top: 0;
+  }
+
+  .price-button:hover {
+    cursor: pointer;
+    filter: brightness(1.5);
   }
 </style>
 
