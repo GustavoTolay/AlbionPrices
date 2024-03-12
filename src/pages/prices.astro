@@ -4,11 +4,27 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title='Precios'>
   <main class='container'>
-    <img id='item-image' src='' alt='' />
+    <section class='header'>
+      <article class='item'>
+        <img id='item-image' src='' alt='' />
+        <footer id='item-title'></footer>
+      </article>
+      <article class="options">
+        <header>Opciones</header>
+        <label for='quality'>Calidad:</label>
+        <select name='quality' id='quality'>
+          <option value='1' selected>Normal</option>
+          <option value='2'>Bueno</option>
+          <option value='3'>Sobresaliente</option>
+          <option value='4'>Excelente</option>
+          <option value='5'>Obra Maestra</option>
+        </select>
+      </article>
+    </section>
 
     <h1>Órdenes de venta</h1>
     <div>
-      <article class='item'>
+      <article>
         <h2>Precio Min.</h2>
         <table class='striped'>
           <thead>
@@ -23,7 +39,7 @@ import Layout from '../layouts/Layout.astro';
           <tbody id='sell_price_min'></tbody>
         </table>
       </article>
-      <article class='item'>
+      <article>
         <h2>Precio Max.</h2>
         <table class='striped'>
           <thead>
@@ -42,7 +58,7 @@ import Layout from '../layouts/Layout.astro';
 
     <h1>Órdenes de compra</h1>
     <div>
-      <article class='item'>
+      <article>
         <h2>Precio Min.</h2>
         <table class='striped'>
           <thead>
@@ -57,7 +73,7 @@ import Layout from '../layouts/Layout.astro';
           <tbody id='buy_price_min'></tbody>
         </table>
       </article>
-      <article class='item'>
+      <article>
         <h2>Precio Max.</h2>
         <table class='striped'>
           <thead>
@@ -81,23 +97,30 @@ import Layout from '../layouts/Layout.astro';
 <script lang='js'>
   const params = new URLSearchParams(window.location.search);
 
-  const quality = parseInt(params.get('quality') || '1');
-  const alias = params.get('alias');
+  const quality = parseInt(params.get('quality') || '6' /* 6: ALL qualities */);
+  const id = params.get('id');
+  const name = params.get('name');
 
   let tablesInfo;
 
   document
     .getElementById('item-image')
-    .setAttribute('src', `https://render.albiononline.com/v1/item/${alias}.png`);
+    .setAttribute('src', `https://render.albiononline.com/v1/item/${id}.png`);
 
   fetch(
-    `https://west.albion-online-data.com/api/v2/stats/prices/${alias}?locations=Caerleon,Bridgewatch,Fort Sterling,Martlock,Thetford,Lymhurst&qualities=${quality}`
+    `https://west.albion-online-data.com/api/v2/stats/prices/${id}?locations=Caerleon,Bridgewatch,Fort Sterling,Martlock,Thetford,Lymhurst&qualities=${quality}`
   )
     .then((res) => res.json())
     .then((res) => {
       tablesInfo = divideTablesInfo(res);
       setTables();
+      if (res.length <= 6) {
+        document.getElementById('quality').innerHTML =
+          '<option value="1" selected>Normal</option>';
+      }
     });
+
+  document.getElementById('item-title').textContent = name;
 
   const tableNames = [
     'sell_price_min',
@@ -114,6 +137,7 @@ import Layout from '../layouts/Layout.astro';
     tableNames.forEach((tableName) => {
       info[tableName] = items.map((item) => ({
         city: item.city,
+        quality: item.quality,
         price: item[tableName],
         date: item[tableName + '_date'],
       }));
@@ -122,9 +146,15 @@ import Layout from '../layouts/Layout.astro';
     return info;
   }
 
+  const qualitySelect = document.getElementById('quality');
+
+  qualitySelect.addEventListener('change', () => setTables());
+
   function setTables() {
     Object.entries(tablesInfo).forEach(([key, value]) => {
       const table = document.getElementById(key);
+
+      value = value.filter((item) => item.quality == qualitySelect.value);
 
       if (orderBy == 'price-asc') value.sort((a, b) => a.price - b.price);
       else if (orderBy == 'price-desc') value.sort((a, b) => b.price - a.price);
@@ -175,6 +205,12 @@ import Layout from '../layouts/Layout.astro';
     padding-top: 0;
   }
 
+  section {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+  }
+
   .price-button:hover {
     cursor: pointer;
     filter: brightness(1.5);
@@ -185,5 +221,9 @@ import Layout from '../layouts/Layout.astro';
   .icon-img {
     height: 40px;
     margin-right: 10px;
+  }
+
+  #item-image {
+    height: 150px;
   }
 </style>
