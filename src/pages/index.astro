@@ -60,7 +60,7 @@ import Layout from '../layouts/Layout.astro';
     list.forEach((item) => {
       html += `
 				<li class="list__item">
-          <a href="/prices?alias=${item.id}&quality=1">
+          <a href="/prices?id=${item.id}&name=${item.name}">
             <article class="item">
 					    <h6>${item.name}</h6>
 					    <img class="item__image" src="https://render.albiononline.com/v1/item/${item.id}.png"/>
