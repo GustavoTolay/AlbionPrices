@@ -1,6 +1,6 @@
 ---
-import SearchBar from '../components/SearchBar.astro';
 import Layout from '../layouts/Layout.astro';
+import HomePage from './_vue-views/HomePage.vue';
 ---
 
 <Layout title='Albion Market Prices'>
@@ -8,117 +8,11 @@ import Layout from '../layouts/Layout.astro';
     <div class='container'>
       <p>Consulta los precios del mercado de Albion West:</p>
     </div>
-    <div class='header'>
-      <div class='container'>
-        <SearchBar />
-      </div>
-    </div>
-
-    <div class='container'>
-      <ul id='item-list'></ul>
-    </div>
+    <HomePage client:load />
   </main>
 </Layout>
 
-<script>
-  import items from '../itemsInfo.json' with { type: 'json' };
-
-  const itemForm = document.getElementById('item-form');
-
-  const itemList = document.getElementById('item-list');
-
-  itemForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const data = Object.fromEntries(new FormData(e.target as HTMLFormElement));
-
-    const searchResult = searchItems(data.name as string);
-
-    setList(searchResult);
-  });
-
-  function searchItems(text: string) {
-    const filteredItems = items.filter((item) =>
-      item.name
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .includes(
-          text
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-        )
-    );
-
-    return filteredItems;
-  }
-
-  function setList(list) {
-    let html = '';
-
-    list.forEach((item) => {
-      html += `
-				<li class="list__item">
-          <a href="/prices?id=${item.id}&name=${item.name}">
-            <article class="item">
-					    <h6>${item.name}</h6>
-					    <img class="item__image" src="https://render.albiononline.com/v1/item/${item.id}.png"/>
-				    </article>
-          </a>
-        </li>`;
-    });
-
-    itemList.innerHTML = html;
-  }
-</script>
-
-<!-- JS-generated-table styles -->
-<style is:global>
-  .item {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-  .item__image {
-    height: 100px;
-    width: 100px;
-    align-self: center;
-  }
-
-  .list__item {
-    list-style: none;
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-  }
-
-  .list__item a {
-    all: unset;
-    cursor: pointer;
-  }
-
-  .list__item a :hover {
-    transform: scale(1.05, 1.05);
-  }
-</style>
-
 <style>
-  ul {
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 10px;
-  }
-
-  .header {
-    position: sticky;
-    top: 56px; /* Navbar's height */
-    z-index: 999;
-    background-color: #13171f;
-  }
-
   main {
     padding-top: 0;
   }
